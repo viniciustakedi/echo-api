@@ -1,7 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { AppModule } from './app.module';
+
 import { config } from 'dotenv';
+
+import { AppModule } from 'src/app.module';
+import { apiEnv } from './infra/env';
 
 async function bootstrap() {
   config();
@@ -9,8 +12,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
-  
-  app.setGlobalPrefix("api")
+
+  app.setGlobalPrefix('api');
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
@@ -20,14 +23,10 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT || 3000, '0.0.0.0');
+  await app.listen(apiEnv.port || 3000, '0.0.0.0');
 
   console.log(
-    '🚀 ~ ENV ~ environment message ~ 🚀',
-    process.env.NODE_ENV_MESSAGE,
-    '🚀',
-    `Run on port ${process.env.PORT}`,
-    '🚀',
+    `${apiEnv.nodeEnvMessage} - Environment: ${apiEnv.environment} - Port: ${apiEnv.port}`,
   );
 }
 bootstrap();
