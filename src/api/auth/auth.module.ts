@@ -5,6 +5,7 @@ import { JwtStrategy } from './jwt/jwt.strategy';
 import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
+import { authEnv } from 'src/infra/env/auth';
 
 @Module({
   imports: [
@@ -12,10 +13,10 @@ import { AuthController } from './auth.controller';
     PassportModule,
     JwtModule.registerAsync({
       useFactory: () => ({
-        privateKey: process.env.JWT_SECRET_PRIVATE,
-        publicKey: process.env.JWT_SECRET_PUBLIC,
+        privateKey: authEnv.jwt.secretPrivate,
+        publicKey: authEnv.jwt.secretPublic,
         signOptions: {
-          expiresIn: process.env.JWT_EXPIRES_IN,
+          expiresIn: authEnv.jwt.expiresIn,
           algorithm: 'RS256',
         },
       }),
