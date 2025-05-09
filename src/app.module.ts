@@ -12,7 +12,9 @@ import { mongoEnv } from './infra/env';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forRoot(mongoEnv.uri),
+    MongooseModule.forRoot(mongoEnv.uri, {
+      dbName: mongoEnv.database,
+    }),
     AuthModule,
     UsersModule,
   ],

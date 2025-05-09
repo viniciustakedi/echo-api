@@ -1,3 +1,6 @@
+import { config } from 'dotenv';
+config();
+
 interface IApiEnv {
   nodeEnvMessage: string;
   environment: string;

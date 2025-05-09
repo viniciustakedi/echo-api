@@ -1,14 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 
-import { config } from 'dotenv';
-
 import { AppModule } from 'src/app.module';
 import { apiEnv } from './infra/env';
 
 async function bootstrap() {
-  config();
-
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
