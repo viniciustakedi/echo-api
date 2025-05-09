@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('auth/login')
+  @Post('sign-in')
   @UsePipes(new ValidationPipe())
   async login(@Body() payload: LoginUserDto) {
     return this.authService.userLogin(payload);

@@ -16,7 +16,7 @@ import { authEnv } from 'src/infra/env/auth';
         privateKey: authEnv.jwt.secretPrivate,
         publicKey: authEnv.jwt.secretPublic,
         signOptions: {
-          expiresIn: authEnv.jwt.expiresIn,
+          expiresIn: authEnv.jwt.expiresInSeconds,
           algorithm: 'RS256',
         },
       }),
