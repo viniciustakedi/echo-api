@@ -8,7 +8,7 @@ import {
 import { Model } from 'mongoose';
 import dayjs from 'dayjs';
 
-import { isUserAdmin, parseJwt } from 'src/utils/functions';
+import { isUserAdmin, parseJwt } from 'src/utils';
 import { Users } from 'src/schemas';
 import {
   dataResponse,

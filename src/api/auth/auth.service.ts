@@ -10,6 +10,7 @@ import { UsersService } from '../users/users.service';
 import { LoginUserDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Users } from 'src/schemas';
+import { authEnv } from 'src/infra/env';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +24,7 @@ export class AuthService {
       sub: user._id,
       name: user.name,
       roles: user.roles,
-      iss: process.env.JWT_ISSUER,
+      iss: authEnv.jwt.issuer,
     };
 
     return this.jwtService.sign(payload);
