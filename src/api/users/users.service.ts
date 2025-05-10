@@ -6,7 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Model } from 'mongoose';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 
 import { isUserAdmin, parseJwt } from 'src/utils';
 import { Users } from 'src/schemas';
@@ -37,8 +37,8 @@ export class UsersService {
       if (isNewUserAdmin) {
         if (!auth || !isUserAdmin(auth)) {
           throw new HttpException(
-            'Only admin can create admin users!',
-            HttpStatus.UNAUTHORIZED,
+            'You are not authorized to create an admin user.',
+            HttpStatus.BAD_REQUEST,
           );
         }
       }
@@ -111,18 +111,23 @@ export class UsersService {
       }
 
       const { password, ...rest } = payload;
-      const hashedPassword = await hashPassword(password);
+
+      const dataUpdated: Record<string, any> = {
+        ...rest,
+        updatedAt: dayjs().toDate(),
+      };
+
+      if (password) {
+        const hashedPassword = await hashPassword(password);
+        dataUpdated.password = hashedPassword;
+      }
 
       await this.userModel
         .updateOne(
           {
             _id: id,
           },
-          {
-            ...rest,
-            password: hashedPassword,
-            updatedAt: dayjs().toISOString(),
-          },
+          dataUpdated,
         )
         .exec();
 

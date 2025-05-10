@@ -30,6 +30,8 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @UsePipes(new ValidationPipe())
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ERole.admin)
   @Post()
   create(
     @Headers('Authorization') auth: string,
@@ -49,7 +51,6 @@ export class UsersController {
   }
 
   @UsePipes(new ValidationPipe())
-  @Roles(ERole.admin, ERole.writer)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Patch(':id')
   update(

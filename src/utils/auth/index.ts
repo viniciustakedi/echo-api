@@ -21,7 +21,12 @@ import { ERole } from 'src/models/roles';
  * console.log(payload); // { userId: 123, iat: 1616239022 }
  * ```
  */
-export const parseJwt = (token: string): Record<string, any> => {
+export const parseJwt = (token: string): {
+  sub: string
+  name: string
+  roles: string[],
+  iss: string,
+} => {
   const jwt = token.replace('Bearer ', '');
   return JSON.parse(String(Buffer.from(jwt.split('.')[1], 'base64')));
 };

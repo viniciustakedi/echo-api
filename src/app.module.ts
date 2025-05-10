@@ -6,15 +6,19 @@ import { AuthModule, UsersModule } from 'src/api/module-exporter';
 import { AppController } from 'src/app.controller';
 import { AppService } from 'src/app.service';
 import { mongoEnv } from './infra/env';
+import { ReviewsModule } from './api/reviews/reviews.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forRoot(mongoEnv.uri),
+    MongooseModule.forRoot(mongoEnv.uri, {
+      dbName: mongoEnv.database,
+    }),
     AuthModule,
     UsersModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
