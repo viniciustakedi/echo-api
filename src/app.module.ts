@@ -6,6 +6,7 @@ import { AuthModule, UsersModule } from 'src/api/module-exporter';
 import { AppController } from 'src/app.controller';
 import { AppService } from 'src/app.service';
 import { mongoEnv } from './infra/env';
+import { ReviewsModule } from './api/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { mongoEnv } from './infra/env';
     }),
     AuthModule,
     UsersModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

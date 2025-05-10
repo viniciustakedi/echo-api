@@ -27,6 +27,7 @@ export class Users extends Document {
   @Prop({
     type: String,
     required: true,
+    unique: true,
     length: 6,
   })
   code: string;

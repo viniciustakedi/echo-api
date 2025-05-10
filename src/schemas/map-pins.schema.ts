@@ -1,11 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { isNumber } from 'class-validator';
 import mongoose, { HydratedDocument, Document } from 'mongoose';
 
-export type ReviewsDocument = HydratedDocument<Reviews>;
+export type MapPinsDocument = HydratedDocument<MapPins>;
 
 @Schema()
-export class Reviews extends Document {
+export class MapPins extends Document {
   @Prop({
     type: String,
     required: true,
@@ -21,7 +20,6 @@ export class Reviews extends Document {
   @Prop({
     type: String,
     required: true,
-    unique: true,
   })
   friendlyUrl: string;
 
@@ -30,12 +28,6 @@ export class Reviews extends Document {
     required: true,
   })
   content: string; // String is a suitable type for storing markdown content as it is plain text.
-
-  @Prop({
-    type: Number,
-    required: true,
-  })
-  rating: Number;
 
   @Prop({
     type: Number,
@@ -52,7 +44,7 @@ export class Reviews extends Document {
 
   @Prop({
     type: Date,
-    default: null,
+    default: Date.now,
   })
   updatedAt: Date;
 
@@ -69,17 +61,4 @@ export class Reviews extends Document {
   isDeleted: boolean;
 }
 
-export const ReviewsSchema = SchemaFactory.createForClass(Reviews);
-
-ReviewsSchema.set('toJSON', {
-  transform: (doc, ret) => {
-    ret.id = ret._id;
-    delete ret._id;
-    delete ret.__v;
-    return ret;
-  },
-});
-
-ReviewsSchema.index({ friendlyUrl: 1 }, { unique: true });
-ReviewsSchema.index({ createdAt: -1 });
-ReviewsSchema.index({ updatedAt: -1 });
+export const MapPinsSchema = SchemaFactory.createForClass(MapPins);
