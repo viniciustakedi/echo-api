@@ -4,6 +4,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from 'src/app.module';
 import { apiEnv } from './infra/env';
 
+// TO-DO: Add tags to reviews
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
