@@ -1,4 +1,11 @@
-import { IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
+import { Types } from 'mongoose';
 
 export class UpdateReviewDto {
   @IsString()
@@ -17,4 +24,8 @@ export class UpdateReviewDto {
   @IsNumber()
   @IsOptional()
   rating?: number;
+
+  @IsArray()
+  @IsOptional()
+  tags?: Types.ObjectId[];
 }

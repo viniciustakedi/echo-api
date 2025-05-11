@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Document } from 'mongoose';
 
-export type TagsDocument = HydratedDocument<Tags>;
+export type ReviewsTaggedsDocument = HydratedDocument<ReviewsTaggeds>;
 
 @Schema()
-export class Tags extends Document {
+export class ReviewsTaggeds extends Document {
   @Prop({
     required: true,
     type: mongoose.Schema.Types.ObjectId,
@@ -26,4 +26,5 @@ export class Tags extends Document {
   createdAt: Date;
 }
 
-export const TagsSchema = SchemaFactory.createForClass(Tags);
+export const ReviewsTaggedsSchema =
+  SchemaFactory.createForClass(ReviewsTaggeds);
