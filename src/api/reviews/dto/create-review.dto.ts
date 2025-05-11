@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MaxLength,
+} from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateReviewDto {
   @IsString()
@@ -17,4 +24,8 @@ export class CreateReviewDto {
   @IsNumber()
   @IsNotEmpty()
   rating: number;
+
+  @IsArray()
+  @IsNotEmpty()
+  tags: Types.ObjectId[];
 }
