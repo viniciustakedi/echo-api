@@ -9,6 +9,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as dayjs from 'dayjs';
 
+import { ReviewsTaggeds } from 'src/schemas/reviews-tagged.schema';
+import { Reviews } from 'src/schemas/reviews.schema';
 import {
   dataResponse,
   dataResponseWithPagination,
@@ -20,10 +22,10 @@ import {
   parseJwt,
   textResponse,
 } from 'src/utils';
-import { Reviews } from 'src/schemas/reviews.schema';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { TagsService } from '../tags/tags.service';
 import { ReviewsNamespace } from './types';
 
 @Injectable()
@@ -31,11 +33,21 @@ export class ReviewsService {
   constructor(
     @InjectModel(Reviews.name)
     private readonly reviewsModel: Model<Reviews>,
+
+    @InjectModel(ReviewsTaggeds.name)
+    private readonly reviewsTaggedsModel: Model<ReviewsTaggeds>,
+
+    private readonly tagsService: TagsService,
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
   async createReview(payload: CreateReviewDto, auth: string) {
     const userId = parseJwt(auth).sub;
+
+    const tags = await this.tagsService.checkIfTagsExists(payload.tags, true);
+    if (tags.statusCode !== HttpStatus.OK) {
+      return tags;
+    }
 
     const reviewCode = generateCode();
     const friendlyUrl = `${payload.headline.toLowerCase().replaceAll(' ', '-')}-${reviewCode}`;
@@ -46,7 +58,28 @@ export class ReviewsService {
       createdBy: userId,
       claps: 0,
     });
-    await newReviewPost.save();
+
+    const session = await this.reviewsModel.db.startSession();
+    session.startTransaction();
+
+    const newReviewId = (await newReviewPost.save({ session }))._id;
+
+    if (!newReviewId) {
+      throw new HttpException(
+        'Error creating review',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    const tagsToInsert = payload.tags.map((tag: Types.ObjectId) => ({
+      reviewId: newReviewId,
+      tagId: tag,
+    }));
+
+    await this.reviewsTaggedsModel.insertMany(tagsToInsert, { session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     return dataResponse(
       {
@@ -80,10 +113,43 @@ export class ReviewsService {
     }
 
     const reviews = await this.reviewsModel
-      .find(queryFilters, '-createdBy -__v -isDeleted')
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
+      .aggregate([
+        { $match: queryFilters },
+        { $sort: { createdAt: -1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: 'reviewstaggeds',
+            localField: '_id',
+            foreignField: 'reviewId',
+            as: 'tagsInfo',
+          },
+        },
+        {
+          $lookup: {
+            from: 'tags',
+            localField: 'tagsInfo.tagId',
+            foreignField: '_id',
+            as: 'tags',
+          },
+        },
+        {
+          $project: {
+            createdBy: 0,
+            content: 0,
+            claps: 0,
+            updatedAt: 0,
+            isDeleted: 0,
+            tagsInfo: 0,
+            __v: 0,
+            'tags._id': 0,
+            'tags.__v': 0,
+            'tags.createdAt': 0,
+            'tags.updatedAt': 0,
+          },
+        },
+      ])
       .exec();
 
     if (!reviews || reviews.length === 0) {
@@ -117,23 +183,50 @@ export class ReviewsService {
     }
 
     const review = await this.reviewsModel
-      .findOne(
-        { [keyType]: keyToFind, isDeleted: false },
-        fields ?? '-createdBy -__v -isDeleted',
-      )
+      .aggregate([
+        { $match: { [keyType]: keyToFind, isDeleted: false } },
+        { $limit: 1 },
+        {
+          $lookup: {
+            from: 'reviewstaggeds',
+            localField: '_id',
+            foreignField: 'reviewId',
+            as: 'tagsInfo',
+          },
+        },
+        {
+          $lookup: {
+            from: 'tags',
+            localField: 'tagsInfo.tagId',
+            foreignField: '_id',
+            as: 'tags',
+          },
+        },
+        {
+          $project: {
+            isDeleted: 0,
+            tagsInfo: 0,
+            __v: 0,
+            'tags._id': 0,
+            'tags.__v': 0,
+            'tags.createdAt': 0,
+            'tags.updatedAt': 0,
+          },
+        },
+      ])
       .exec();
 
-    if (!review) {
+    if (!review || review.length === 0) {
       return textResponse('Review not found', HttpStatus.NOT_FOUND);
     }
 
     let reviewResponse: ReviewsNamespace.FindOneDBResponse = {
-      ...(review.toObject() as ReviewsNamespace.FindOneDBResponse),
+      ...(review[0] as ReviewsNamespace.FindOneDBResponse),
     };
 
     if (fields) {
       reviewResponse = {
-        ...(review.toObject() as ReviewsNamespace.FindOneDBResponse),
+        ...(review[0] as ReviewsNamespace.FindOneDBResponse),
         keyType,
         keyUsed: keyToFind,
       };
@@ -158,6 +251,18 @@ export class ReviewsService {
       return review;
     }
 
+    let tags = [];
+    if (payload.tags) {
+      const tagsResponse = await this.tagsService.checkIfTagsExists(
+        payload.tags,
+        true,
+      );
+      if (tagsResponse.statusCode !== HttpStatus.OK) {
+        return tagsResponse;
+      }
+      tags = payload.tags;
+    }
+
     const updatedBySameUser = isSameUser(
       review.data.createdBy.toString(),
       auth,
@@ -170,16 +275,43 @@ export class ReviewsService {
       );
     }
 
+    const session = await this.reviewsModel.db.startSession();
+    session.startTransaction();
+
     await this.reviewsModel
-      .findOneAndUpdate(
+      .updateOne(
         { [review.data.keyType]: review.data.keyUsed },
         {
           ...payload,
           updatedAt: dayjs().format('YYYY-MM-DD'),
         },
-        { new: true },
+        { session, new: true },
       )
       .exec();
+
+    const tagsToInsert = payload.tags.map((tag: Types.ObjectId) => ({
+      reviewId: review.data._id,
+      tagId: tag,
+    }));
+
+    await this.reviewsTaggedsModel.insertMany(tagsToInsert, { session });
+
+    const allTags = await this.reviewsTaggedsModel
+      .find({ reviewId: review.data._id })
+      .exec();
+
+    const tagsToDelete = allTags.filter(
+      (tag) => !tags.includes(tag.tagId.toString()),
+    );
+
+    if (tagsToDelete.length > 0) {
+      await this.reviewsTaggedsModel
+        .deleteMany({ _id: { $in: tagsToDelete.map((tag) => tag._id) } })
+        .exec();
+    }
+
+    await session.commitTransaction();
+    session.endSession();
 
     return textResponse('Review updated successfully', HttpStatus.OK);
   }
