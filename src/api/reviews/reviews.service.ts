@@ -1,4 +1,9 @@
-import { HttpCode, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model, Types } from 'mongoose';
@@ -81,8 +86,8 @@ export class ReviewsService {
       .limit(limit)
       .exec();
 
-    if (!reviews) {
-      return textResponse('No reviews found', HttpStatus.NOT_FOUND);
+    if (!reviews || reviews.length === 0) {
+      throw new HttpException('No reviews found', HttpStatus.NOT_FOUND);
     }
 
     const total = await this.reviewsModel.countDocuments(queryFilters);
