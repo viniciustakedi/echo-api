@@ -9,12 +9,13 @@ export class Tags extends Document {
   @Prop({
     type: String,
     required: true,
+    unique: true,
   })
   name: string;
 
   @Prop({
     type: Date,
-    default: Date.now,
+    default: null,
   })
   updatedAt: Date;
 
@@ -23,12 +24,8 @@ export class Tags extends Document {
     default: Date.now,
   })
   createdAt: Date;
-
-  @Prop({
-    type: Boolean,
-    default: false,
-  })
-  isDeleted: boolean;
 }
 
 export const TagsSchema = SchemaFactory.createForClass(Tags);
+
+TagsSchema.index({ name: 1 }, { unique: true });
