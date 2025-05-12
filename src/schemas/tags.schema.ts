@@ -28,4 +28,4 @@ export class Tags extends Document {
 
 export const TagsSchema = SchemaFactory.createForClass(Tags);
 
-TagsSchema.index({ name: 1 }, { unique: true });
+// TagsSchema.index({ name: 1 }, { unique: true });
