@@ -204,13 +204,20 @@ export class ReviewsService {
         },
         {
           $project: {
-            isDeleted: 0,
-            tagsInfo: 0,
-            __v: 0,
-            'tags._id': 0,
-            'tags.__v': 0,
-            'tags.createdAt': 0,
-            'tags.updatedAt': 0,
+            ...(fields
+              ? fields.split(' ').reduce((acc, field) => {
+                  acc[field] = 1;
+                  return acc;
+                }, {})
+              : {
+                  isDeleted: 0,
+                  tagsInfo: 0,
+                  __v: 0,
+                  'tags._id': 0,
+                  'tags.__v': 0,
+                  'tags.createdAt': 0,
+                  'tags.updatedAt': 0,
+                }),
           },
         },
       ])
@@ -246,21 +253,23 @@ export class ReviewsService {
     payload: UpdateReviewDto,
     auth: string,
   ): Promise<ITextResponse> {
-    const review = await this.findOne(key, 'createdBy');
+    const review = await this.findOne(key, 'createdBy _id');
     if (review.statusCode !== HttpStatus.OK || !('data' in review)) {
       return review;
     }
 
-    let tags = [];
+    let tags: string[] = [];
     if (payload.tags) {
       const tagsResponse = await this.tagsService.checkIfTagsExists(
         payload.tags,
         true,
       );
+
       if (tagsResponse.statusCode !== HttpStatus.OK) {
         return tagsResponse;
       }
-      tags = payload.tags;
+
+      tags = payload.tags.map((tag) => tag.toString());
     }
 
     const updatedBySameUser = isSameUser(
@@ -289,25 +298,44 @@ export class ReviewsService {
       )
       .exec();
 
-    const tagsToInsert = payload.tags.map((tag: Types.ObjectId) => ({
-      reviewId: review.data._id,
-      tagId: tag,
-    }));
-
-    await this.reviewsTaggedsModel.insertMany(tagsToInsert, { session });
-
-    const allTags = await this.reviewsTaggedsModel
-      .find({ reviewId: review.data._id })
-      .exec();
-
-    const tagsToDelete = allTags.filter(
-      (tag) => !tags.includes(tag.tagId.toString()),
-    );
-
-    if (tagsToDelete.length > 0) {
-      await this.reviewsTaggedsModel
-        .deleteMany({ _id: { $in: tagsToDelete.map((tag) => tag._id) } })
+    if (tags.length) {
+      const allTags = await this.reviewsTaggedsModel
+        .find({ reviewId: review.data._id })
+        .select('tagId')
         .exec();
+
+      const allTagsMap = allTags.map((tag) => ({
+        _id: tag._id,
+        tagId: tag.tagId.toString(),
+      }));
+
+      const tagsToInsert = tags.filter(
+        (tag) => !allTagsMap.some((existingTag) => existingTag.tagId === tag),
+      );
+
+      if (tagsToInsert.length) {
+        const tagsToInsertData = tagsToInsert.map((tag) => ({
+          reviewId: review.data._id,
+          tagId: tag,
+        }));
+
+        await this.reviewsTaggedsModel.insertMany(tagsToInsertData, {
+          session,
+        });
+      }
+
+      const tagsToDelete = allTagsMap.filter(
+        (existingTag) => !tags.includes(existingTag.tagId),
+      ).map((tag) => tag._id);
+
+      if (tagsToDelete.length > 0) {
+        await this.reviewsTaggedsModel
+          .deleteMany(
+            { _id: { $in: tagsToDelete.map((tag) => tag) } },
+            { session },
+          )
+          .exec();
+      }
     }
 
     await session.commitTransaction();
