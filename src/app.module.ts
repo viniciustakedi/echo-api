@@ -8,6 +8,7 @@ import { AppService } from 'src/app.service';
 import { mongoEnv } from './infra/env';
 import { ReviewsModule } from './api/reviews/reviews.module';
 import { TagsModule } from './api/tags/tags.module';
+import { MapMarkersModule } from './api/map-markers/map-markers.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TagsModule } from './api/tags/tags.module';
     UsersModule,
     ReviewsModule,
     TagsModule,
+    MapMarkersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -21,6 +21,24 @@ export class Reviews extends Document {
   @Prop({
     type: String,
     required: true,
+  })
+  city: string;
+
+  @Prop({
+    type: String,
+    required: true,
+  })
+  country: string;
+
+  @Prop({
+    type: String,
+    required: true,
+  })
+  address: string;
+
+  @Prop({
+    type: String,
+    required: true,
     unique: true,
   })
   friendlyUrl: string;
@@ -36,6 +54,13 @@ export class Reviews extends Document {
     required: true,
   })
   rating: Number;
+
+
+  @Prop({
+    type: Number,
+    required: true,
+  })
+  priceRating: Number;
 
   @Prop({
     type: Number,
@@ -71,6 +96,26 @@ export class Reviews extends Document {
 
 export const ReviewsSchema = SchemaFactory.createForClass(Reviews);
 
+ReviewsSchema.pre('find', function () {
+  this.where({ isDeleted: false });
+});
+
+ReviewsSchema.pre('findOne', function () {
+  this.where({ isDeleted: false });
+});
+
+ReviewsSchema.pre('findOneAndUpdate', function () {
+  this.where({ isDeleted: false });
+});
+
+ReviewsSchema.pre('countDocuments', function () {
+  this.where({ isDeleted: false });
+});
+
+ReviewsSchema.pre('aggregate', function () {
+  this.pipeline().unshift({ $match: { isDeleted: false } });
+});
+
 ReviewsSchema.set('toJSON', {
   transform: (doc, ret) => {
     ret.id = ret._id;
@@ -80,6 +125,6 @@ ReviewsSchema.set('toJSON', {
   },
 });
 
-ReviewsSchema.index({ friendlyUrl: 1 }, { unique: true });
-ReviewsSchema.index({ createdAt: -1 });
-ReviewsSchema.index({ updatedAt: -1 });
+// ReviewsSchema.index({ friendlyUrl: 1 }, { unique: true });
+// ReviewsSchema.index({ createdAt: -1 });
+// ReviewsSchema.index({ updatedAt: -1 });
