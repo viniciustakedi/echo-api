@@ -25,6 +25,22 @@ export class UpdateReviewDto {
   @IsOptional()
   rating?: number;
 
+  @IsNumber()
+  @IsOptional()
+  priceRating?: number;
+
+  @IsString()
+  @IsOptional()
+  city?: string;
+
+  @IsString()
+  @IsOptional()
+  country?: string;
+
+  @IsString()
+  @IsOptional()
+  address?: string;
+
   @IsArray()
   @IsOptional()
   tags?: Types.ObjectId[];

@@ -25,6 +25,22 @@ export class CreateReviewDto {
   @IsNotEmpty()
   rating: number;
 
+  @IsNumber()
+  @IsNotEmpty()
+  priceRating: number;
+
+  @IsString()
+  @IsNotEmpty()
+  city: string;
+
+  @IsString()
+  @IsNotEmpty()
+  country: string;
+
+  @IsString()
+  @IsNotEmpty()
+  address: string;
+
   @IsArray()
   @IsNotEmpty()
   tags: Types.ObjectId[];
