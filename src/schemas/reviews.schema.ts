@@ -55,7 +55,6 @@ export class Reviews extends Document {
   })
   rating: Number;
 
-
   @Prop({
     type: Number,
     required: true,
