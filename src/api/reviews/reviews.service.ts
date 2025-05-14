@@ -116,8 +116,8 @@ export class ReviewsService {
       .aggregate([
         { $match: queryFilters },
         { $sort: { createdAt: -1 } },
-        { $skip: (page - 1) * limit },
-        { $limit: limit },
+        { $skip: (page - 1) * Number(limit) },
+        { $limit: Number(limit) },
         {
           $lookup: {
             from: 'reviewstaggeds',
