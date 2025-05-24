@@ -1,73 +1,169 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Echo API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A NestJS-based API for managing reviews, tags, map markers, and user authentication.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Tech Stack
 
-## Description
+- [NestJS](https://nestjs.com/) v11.1.0
+- [MongoDB](https://www.mongodb.com/) with Mongoose v8.14.2
+- [TypeScript](https://www.typescriptlang.org/) v5.8.3
+- JWT Authentication
+- Class Validation
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📁 Project Structure
 
-## Installation
-
-```bash
-$ npm install
+```
+src/
+├── api/
+│   ├── auth/             # Authentication module
+│   ├── map-markers/      # Map markers feature
+│   ├── reviews/          # Reviews feature
+│   ├── tags/            # Tags feature
+│   ├── users/           # Users feature
+│   └── module-exporter.ts
+├── infra/
+│   └── env/             # Environment configurations
+├── models/
+│   └── roles.ts         # Role definitions
+├── schemas/             # MongoDB schemas
+│   ├── map-markers.schema.ts
+│   ├── reviews.schema.ts
+│   ├── reviews-tagged.schema.ts
+│   ├── tags.schema.ts
+│   └── users.schema.ts
+├── utils/               # Utility functions
+├── app.module.ts        # Main application module
+└── main.ts             # Application entry point
 ```
 
-## Running the app
+## 🛣️ API Routes
+
+### Auth
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+
+### Users
+- `POST /api/users` - Create user (Admin)
+- `GET /api/users/:id` - Get user by ID
+- `PATCH /api/users/:id` - Update user
+
+### Reviews
+- `POST /api/reviews` - Create review (Admin)
+- `GET /api/reviews` - List all reviews
+- `GET /api/reviews/:key` - Get review by key
+- `PATCH /api/reviews/:key` - Update review (Admin)
+- `DELETE /api/reviews/:key` - Soft delete review (Admin)
+
+### Tags
+- `POST /api/tags` - Create tag (Admin)
+- `GET /api/tags` - List all tags
+- `PATCH /api/tags/:id` - Update tag (Admin)
+
+### Map Markers
+- `POST /api/map-markers` - Create map marker (Admin)
+- `GET /api/map-markers` - List all map markers
+- `GET /api/map-markers/:id` - Get map marker by ID
+- `PATCH /api/map-markers/:id` - Update map marker (Admin)
+- `DELETE /api/map-markers/:id` - Delete map marker (Admin)
+
+## 🔧 Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
 
 ```bash
-# development
-$ npm run start
+# Project
+ENVIRONMENT='development'
+NODE_ENV_MESSAGE='Development Environment'
+PORT=3001
 
-# watch mode
-$ npm run start:dev
+# Database
+MONGODB_URI='mongodb://username:password@host:port/database'
+MONGODB_DATABASE='echo'
 
-# production mode
-$ npm run start:prod
+# Auth
+JWT_ISSUER='your-issuer'
+JWT_EXPIRES_IN_SECONDS='3600'
+JWT_SECRET_PUBLIC='your-public-key'
+JWT_SECRET_PRIVATE='your-private-key'
 ```
 
-## Test
+## 📦 Installation
 
 ```bash
-# unit tests
-$ npm run test
+# Install dependencies
+npm install
 
-# e2e tests
-$ npm run test:e2e
+# Create .env file
+cp .env.example .env
 
-# test coverage
-$ npm run test:cov
+# Start development server
+npm run start:dev
 ```
 
-## Support
+## 🛠️ Available Scripts
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# Build
+npm run build
 
-## Stay in touch
+# Development
+npm run start:dev
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Production
+npm run start:prod
 
-## License
+# Tests
+npm run test
+npm run test:e2e
+npm run test:cov
 
-Nest is [MIT licensed](LICENSE).
+# Code formatting
+npm run format
+npm run lint
+```
+
+## 📝 Features
+
+- JWT-based authentication
+- Role-based access control (Admin/User)
+- MongoDB integration with Mongoose
+- CRUD operations for reviews, tags, and map markers
+- Soft delete functionality
+- Input validation using class-validator
+- Environment-based configuration
+- Error handling middleware
+- Code formatting with Prettier
+- ESLint for code quality
+
+## 🔐 Authentication
+
+The API uses JWT tokens for authentication. Protected routes require a valid JWT token in the Authorization header:
+
+```
+Authorization: Bearer <token>
+```
+
+## 👥 Role-Based Access
+
+Two main roles are supported:
+- `admin`: Full access to all endpoints
+- `user`: Limited access to public endpoints
+
+## 🧪 Testing
+
+The project includes unit tests and e2e tests:
+
+```bash
+# Run unit tests
+npm run test
+
+# Run e2e tests
+npm run test:e2e
+
+# Generate test coverage
+npm run test:cov
+```
+
+📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
