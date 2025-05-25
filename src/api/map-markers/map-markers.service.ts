@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  forwardRef,
   HttpCode,
   HttpStatus,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { CreateMapMarkerDto } from './dto/create-map-marker.dto';
@@ -18,7 +20,6 @@ import {
   ITextResponse,
   textResponse,
 } from 'src/utils';
-import { text } from 'stream/consumers';
 import { MapMarkersNamespace } from './types';
 
 @Injectable()
@@ -27,6 +28,7 @@ export class MapMarkersService {
     @InjectModel(MapMarkers.name)
     private readonly mapMarkersModel: Model<MapMarkers>,
 
+    @Inject(forwardRef(() => ReviewsService))
     private readonly reviewsService: ReviewsService,
   ) {}
 
@@ -189,7 +191,7 @@ export class MapMarkersService {
     }
 
     const deletedMapMarker = await this.mapMarkersModel
-      .deleteOne({ _id: id })
+      .updateOne({ _id: id }, { isDeleted: true })
       .exec();
 
     if (!deletedMapMarker) {
@@ -200,5 +202,38 @@ export class MapMarkersService {
     }
 
     return textResponse('Map marker deleted successfully', HttpStatus.OK);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  async findByReviewId({
+    id,
+    fields,
+    noException,
+  }: {
+    id: string;
+    fields?: string;
+    noException?: boolean;
+  }): Promise<ITextResponse | IDataResponse> {
+    const mapMarker = await this.mapMarkersModel
+      .findOne({ reviewId: id }, fields || '-__v')
+      .exec();
+
+    if (!mapMarker && noException) {
+      return textResponse('Map marker not found', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!mapMarker && !noException) {
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Map marker not found',
+      });
+    }
+
+    return dataResponse(
+      mapMarker,
+      1,
+      'Map marker fetched successfully',
+      HttpStatus.OK,
+    );
   }
 }
