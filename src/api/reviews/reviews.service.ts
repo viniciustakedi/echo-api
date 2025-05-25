@@ -1,7 +1,11 @@
 import {
+  BadRequestException,
+  ForbiddenException,
+  forwardRef,
   HttpCode,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -27,6 +31,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { TagsService } from '../tags/tags.service';
 import { ReviewsNamespace } from './types';
+import { MapMarkersService } from '../map-markers/map-markers.service';
 
 @Injectable()
 export class ReviewsService {
@@ -37,7 +42,11 @@ export class ReviewsService {
     @InjectModel(ReviewsTaggeds.name)
     private readonly reviewsTaggedsModel: Model<ReviewsTaggeds>,
 
+    @Inject(TagsService)
     private readonly tagsService: TagsService,
+
+    @Inject(forwardRef(() => MapMarkersService))
+    private readonly mapMarkerService: MapMarkersService,
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
@@ -222,7 +231,7 @@ export class ReviewsService {
       .exec();
 
     if (!review || review.length === 0) {
-      return textResponse('Review not found', HttpStatus.NOT_FOUND);
+      throw new BadRequestException('Review not found.');
     }
 
     let reviewResponse: ReviewsNamespace.FindOneDBResponse = {
@@ -322,9 +331,9 @@ export class ReviewsService {
         });
       }
 
-      const tagsToDelete = allTagsMap.filter(
-        (existingTag) => !tags.includes(existingTag.tagId),
-      ).map((tag) => tag._id);
+      const tagsToDelete = allTagsMap
+        .filter((existingTag) => !tags.includes(existingTag.tagId))
+        .map((tag) => tag._id);
 
       if (tagsToDelete.length > 0) {
         await this.reviewsTaggedsModel
@@ -355,14 +364,22 @@ export class ReviewsService {
     );
 
     if (!deletedBySameUser) {
-      return textResponse(
-        'You are not allowed to delete this review',
-        HttpStatus.FORBIDDEN,
+      throw new ForbiddenException('You are not allowed to delete this review');
+    }
+
+    const mapMarker = await this.mapMarkerService.findByReviewId({
+      id: review.data._id,
+      fields: '_id',
+      noException: true,
+    });
+    if (mapMarker.statusCode === HttpStatus.OK) {
+      throw new BadRequestException(
+        'A map marker is linked with this review, delete the map marker first, then delete this review.',
       );
     }
 
     await this.reviewsModel
-      .findOneAndUpdate(
+      .updateOne(
         { [review.data.keyType]: review.data.keyUsed },
         {
           isDeleted: true,
