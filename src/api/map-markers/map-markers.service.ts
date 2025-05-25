@@ -33,7 +33,9 @@ export class MapMarkersService {
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
-  async createMarker(payload: CreateMapMarkerDto): Promise<ITextResponse> {
+  async createMarker(
+    payload: CreateMapMarkerDto,
+  ): Promise<ITextResponse | IDataResponse> {
     const review = await this.reviewsService.findOne(payload.reviewId, '_id');
 
     if (review.statusCode !== HttpStatus.OK) {
@@ -50,13 +52,17 @@ export class MapMarkersService {
     const savedMapMarker = await newMapMarker.save();
 
     if (!savedMapMarker) {
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Error creating map marker',
-      };
+      throw new BadRequestException('Error creating map marker');
     }
 
-    return textResponse('Map marker created successfully', HttpStatus.CREATED);
+    return dataResponse(
+      {
+        _id: savedMapMarker._id,
+      },
+      1,
+      'Map marker created successfully',
+      HttpStatus.CREATED,
+    );
   }
 
   @HttpCode(HttpStatus.OK)
