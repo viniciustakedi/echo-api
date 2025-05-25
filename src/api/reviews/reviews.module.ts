@@ -1,5 +1,6 @@
 import { MongooseModule } from '@nestjs/mongoose';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 
 import { ReviewsService } from './reviews.service';
 import { ReviewsController } from './reviews.controller';
@@ -7,7 +8,10 @@ import { ReviewsController } from './reviews.controller';
 import { ReviewsSchema } from 'src/schemas/reviews.schema';
 import { UsersSchema } from 'src/schemas';
 import { ReviewsTaggedsSchema } from 'src/schemas/reviews-tagged.schema';
+
+import { MapMarkersModule } from '../map-markers/map-markers.module';
 import { TagsModule } from '../tags/tags.module';
+import { RolesGuard } from '../auth/roles/roles.guard';
 
 @Module({
   imports: [
@@ -17,9 +21,10 @@ import { TagsModule } from '../tags/tags.module';
       { name: 'Users', schema: UsersSchema },
     ]),
     TagsModule,
+    forwardRef(() => MapMarkersModule),
   ],
   controllers: [ReviewsController],
-  providers: [ReviewsService],
+  providers: [ReviewsService, { provide: APP_GUARD, useClass: RolesGuard }],
   exports: [ReviewsService],
 })
 export class ReviewsModule {}
