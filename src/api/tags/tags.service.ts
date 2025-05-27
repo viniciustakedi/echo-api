@@ -14,6 +14,7 @@ import { Tags } from 'src/schemas/tags.schema';
 import {
   dataResponse,
   dataResponseWithPagination,
+  IDataResponse,
   IDataResponseWithPagination,
   ITextResponse,
   textResponse,
@@ -29,13 +30,20 @@ export class TagsService {
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
-  async create(payload: CreateTagDto): Promise<ITextResponse> {
+  async create(payload: CreateTagDto): Promise<IDataResponse | ITextResponse> {
     const newTag = new this.tagsModel({
       ...payload,
     });
 
-    await newTag.save();
-    return textResponse('Tag created successfully', HttpStatus.CREATED);
+    const newTagQueryResponse = await newTag.save();
+    return dataResponse(
+      {
+        _id: newTagQueryResponse._id,
+      },
+      1,
+      'Tag created successfully',
+      HttpStatus.CREATED,
+    );
   }
 
   @HttpCode(HttpStatus.OK)
