@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpCode,
   HttpException,
   HttpStatus,
@@ -31,6 +32,12 @@ export class TagsService {
 
   @HttpCode(HttpStatus.CREATED)
   async create(payload: CreateTagDto): Promise<IDataResponse | ITextResponse> {
+    const existingTag = await this.tagsModel.findOne({ name: payload.name });
+
+    if (existingTag) {
+      throw new BadRequestException('Tag already exists');
+    }
+
     const newTag = new this.tagsModel({
       ...payload,
     });
