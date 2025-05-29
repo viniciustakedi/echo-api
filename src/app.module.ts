@@ -5,10 +5,13 @@ import { Module } from '@nestjs/common';
 import { AuthModule, UsersModule } from 'src/api/module-exporter';
 import { AppController } from 'src/app.controller';
 import { AppService } from 'src/app.service';
+
 import { mongoEnv } from './infra/env';
+
 import { ReviewsModule } from './api/reviews/reviews.module';
 import { TagsModule } from './api/tags/tags.module';
 import { MapMarkersModule } from './api/map-markers/map-markers.module';
+import { ImagesModule } from './api/images/images.module';
 
 @Module({
   imports: [
@@ -23,6 +26,7 @@ import { MapMarkersModule } from './api/map-markers/map-markers.module';
     ReviewsModule,
     TagsModule,
     MapMarkersModule,
+    ImagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
