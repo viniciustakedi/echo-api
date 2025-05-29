@@ -15,9 +15,10 @@ A NestJS-based API for managing reviews, tags, map markers, and user authenticat
 ```
 src/
 ├── api/
-│   ├── auth/             # Authentication module
-│   ├── map-markers/      # Map markers feature
-│   ├── reviews/          # Reviews feature
+│   ├── auth/            # Authentication module
+│   ├── images/          # Create and delete images feature
+│   ├── map-markers/     # Map markers feature
+│   ├── reviews/         # Reviews feature
 │   ├── tags/            # Tags feature
 │   ├── users/           # Users feature
 │   └── module-exporter.ts
@@ -33,7 +34,7 @@ src/
 │   └── users.schema.ts
 ├── utils/               # Utility functions
 ├── app.module.ts        # Main application module
-└── main.ts             # Application entry point
+└── main.ts              # Application entry point
 ```
 
 ## 🛣️ API Routes
@@ -65,6 +66,10 @@ src/
 - `GET /api/map-markers/:id` - Get map marker by ID
 - `PATCH /api/map-markers/:id` - Update map marker (Admin)
 - `DELETE /api/map-markers/:id` - Delete map marker (Admin)
+
+### Images
+- `POST /api/images` - Upload an image (Admin)
+- `DELETE /api/images/:id` - Delete and image (Admin)
 
 ## 🔧 Environment Variables
 
