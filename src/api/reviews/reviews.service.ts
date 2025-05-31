@@ -47,7 +47,7 @@ export class ReviewsService {
 
     @Inject(forwardRef(() => MapMarkersService))
     private readonly mapMarkerService: MapMarkersService,
-  ) {}
+  ) { }
 
   @HttpCode(HttpStatus.CREATED)
   async createReview(payload: CreateReviewDto, auth: string) {
@@ -92,6 +92,7 @@ export class ReviewsService {
 
     return dataResponse(
       {
+        _id: newReviewId,
         friendlyUrl,
         createdAt: dayjs().format('YYYY-MM-DD'),
       },
@@ -214,17 +215,17 @@ export class ReviewsService {
           $project: {
             ...(fields
               ? fields.split(' ').reduce((acc, field) => {
-                  acc[field] = 1;
-                  return acc;
-                }, {})
+                acc[field] = 1;
+                return acc;
+              }, {})
               : {
-                  isDeleted: 0,
-                  tagsInfo: 0,
-                  __v: 0,
-                  'tags.__v': 0,
-                  'tags.createdAt': 0,
-                  'tags.updatedAt': 0,
-                }),
+                isDeleted: 0,
+                tagsInfo: 0,
+                __v: 0,
+                'tags.__v': 0,
+                'tags.createdAt': 0,
+                'tags.updatedAt': 0,
+              }),
           },
         },
       ])
