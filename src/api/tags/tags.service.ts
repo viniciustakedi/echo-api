@@ -28,7 +28,7 @@ export class TagsService {
   constructor(
     @InjectModel(Tags.name)
     private readonly tagsModel: Model<Tags>,
-  ) {}
+  ) { }
 
   @HttpCode(HttpStatus.CREATED)
   async create(payload: CreateTagDto): Promise<IDataResponse | ITextResponse> {
@@ -88,8 +88,8 @@ export class TagsService {
     return dataResponseWithPagination(
       tags,
       total,
-      limit,
       page,
+      limit,
       'Tags fetched successfully',
       HttpStatus.OK,
     );
